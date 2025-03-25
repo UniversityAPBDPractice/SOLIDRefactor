@@ -16,7 +16,7 @@ namespace LegacyApp
                 return false;
             }
 
-            var now = DateTime.Now;
+            var now = DateTime.Now; // TODO Move to a separate IDateCalculator(before, now);
             int age = now.Year - dateOfBirth.Year;
             if (now.Month < dateOfBirth.Month || (now.Month == dateOfBirth.Month && now.Day < dateOfBirth.Day)) age--;
 
