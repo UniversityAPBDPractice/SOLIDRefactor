@@ -1,71 +1,47 @@
 ﻿using System;
+// TODO
+// Apply SRP
 
+// Apply OCP
+
+// Apply Dependency Inversion
+
+// Make sure you applied Extraction, Inversion and use Neat Names
 namespace LegacyApp
 {
     public class UserService
     {
+        public bool AddUser(string firstName, string lastName, string email, DateTime dateOfBirth, int clientId, DateTime timeNow)
+        {
+            var user = new User(firstName, lastName, email, dateOfBirth, clientId);
+            bool userCanBeAdded = CanAddUser(user, timeNow, dateOfBirth);
+            if (userCanBeAdded)
+            {
+                UserDataAccess.AddUser(user);
+                return true;
+            }
+
+            return false;
+        }
+
         public bool AddUser(string firstName, string lastName, string email, DateTime dateOfBirth, int clientId)
         {
-            if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
+            return AddUser(firstName, lastName, email, dateOfBirth, clientId, DateTime.Now);
+        }
+
+        public bool CanAddUser(User user, DateTime timeNow, DateTime before)
+        {
+            int minAge = 21;
+            int minCredit = 500;
+            
+            if (user.GetAge(before, timeNow) < minAge)
             {
                 return false;
             }
-
-            if (!email.Contains("@") && !email.Contains("."))
+            if (user.HasCreditSmallerThan(minCredit))
             {
                 return false;
             }
-
-            var now = DateTime.Now; // TODO Move to a separate IDateCalculator(before, now);
-            int age = now.Year - dateOfBirth.Year;
-            if (now.Month < dateOfBirth.Month || (now.Month == dateOfBirth.Month && now.Day < dateOfBirth.Day)) age--;
-
-            if (age < 21)
-            {
-                return false;
-            }
-
-            var clientRepository = new ClientRepository();
-            var client = clientRepository.GetById(clientId);
-
-            var user = new User
-            {
-                Client = client,
-                DateOfBirth = dateOfBirth,
-                EmailAddress = email,
-                FirstName = firstName,
-                LastName = lastName
-            };
-
-            if (client.Type == "VeryImportantClient")
-            {
-                user.HasCreditLimit = false;
-            }
-            else if (client.Type == "ImportantClient")
-            {
-                using (var userCreditService = new UserCreditService())
-                {
-                    int creditLimit = userCreditService.GetCreditLimit(user.LastName, user.DateOfBirth);
-                    creditLimit = creditLimit * 2;
-                    user.CreditLimit = creditLimit;
-                }
-            }
-            else
-            {
-                user.HasCreditLimit = true;
-                using (var userCreditService = new UserCreditService())
-                {
-                    int creditLimit = userCreditService.GetCreditLimit(user.LastName, user.DateOfBirth);
-                    user.CreditLimit = creditLimit;
-                }
-            }
-
-            if (user.HasCreditLimit && user.CreditLimit < 500)
-            {
-                return false;
-            }
-
-            UserDataAccess.AddUser(user);
             return true;
         }
     }
