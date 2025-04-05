@@ -1,23 +1,25 @@
 ﻿using System;
-// TODO
-// Apply SRP
-
-// Apply OCP
-
-// Apply Dependency Inversion
-
-// Make sure you applied Extraction, Inversion and use Neat Names
 namespace LegacyApp
 {
     public class UserService
     {
+        private IUserDataAccess _dataAccess;
+        public UserService()
+        {
+            _dataAccess = new DefaultUserDataAccess();
+        }
+
+        public UserService(IUserDataAccess dataAccess)
+        {
+            _dataAccess = dataAccess;
+        }
         public bool AddUser(string firstName, string lastName, string email, DateTime dateOfBirth, int clientId, DateTime timeNow)
         {
             var user = new User(firstName, lastName, email, dateOfBirth, clientId);
             bool userCanBeAdded = CanAddUser(user, timeNow, dateOfBirth);
             if (userCanBeAdded)
             {
-                UserDataAccess.AddUser(user);
+                _dataAccess.AddUser(user);
                 return true;
             }
 
